@@ -1,32 +1,66 @@
 import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router";
+import api from "../api/axios";
 import { useAuth } from "../context/authContext";
 
 const Login = () => {
-  const { login } = useAuth();
-//   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(form.email, form.password);
-    //   navigate("/leads");
-    } catch {
-      alert("Invalid credentials");
+      await api.post("/login", form, { withCredentials: true });
+      const { data } = await api.get("/myprofile", { withCredentials: true });
+      setUser(data);
+      navigate("/leads");
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid credentials");
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <form onSubmit={handleSubmit} className="bg-white shadow p-6 rounded w-80 space-y-4">
-        <h2 className="text-xl font-bold">Login</h2>
-        <input className="border p-2 w-full" placeholder="Email"
-          onChange={e => setForm({ ...form, email: e.target.value })} />
-        <input type="password" className="border p-2 w-full" placeholder="Password"
-          onChange={e => setForm({ ...form, password: e.target.value })} />
-        <button className="bg-blue-600 text-white px-4 py-2 rounded w-full">Login</button>
+    <div className="max-w-md mx-auto mt-12 p-6 border rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-4">Login</h2>
+      {error && <p className="text-red-500 mb-2">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          required
+        />
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Login
+        </button>
       </form>
+      <p className="mt-4 text-sm">
+        Don’t have an account?{" "}
+        <Link to="/register" className="text-blue-600 underline">
+          Register
+        </Link>
+      </p>
     </div>
   );
 };

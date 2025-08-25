@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-// import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import api from "../api/axios";
 
 const LeadForm = () => {
   const { id } = useParams();
-//   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
     company: "", city: "", state: "", source: "website", status: "new",
