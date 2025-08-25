@@ -11,7 +11,7 @@ const Register = () => {
     watch,
     formState: { errors },
   } = useForm();
-//   const { register : RegisterUser} = useAuth()
+  const { register : RegisterUser} = useAuth()
   const [serverError, setServerError] = useState("");
   const navigate = useNavigate();
 
@@ -21,8 +21,7 @@ const Register = () => {
       return;
     }
     try {
-    //   await RegisterUser(data);
-      await api.post("/auth/register", data);
+      await RegisterUser(data);
       navigate("/leads");
     } catch (err) {
       setServerError(err.response?.data?.message || "Registration failed");

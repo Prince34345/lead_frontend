@@ -1,70 +1,83 @@
-import { useState, useEffect, useCallback } from "react";
-import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import api from "../api/axios";
-import { Link } from "react-router";
+import { useParams, Link } from "react-router";
+import { useEffect, useState } from "react";
+import { useLeads } from "../context/leadContext";
 
-const Leads = () => {
-  const [rowData, setRowData] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+export default function LeadDetails() {
+  const { id } = useParams();
+  const { getLeadById } = useLeads();
+  const [lead, setLead] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchLeads = useCallback(async () => {
-    const { data } = await api.get("/leads", {
-      params: { page: pagination.page, limit: pagination.limit },
-    });
-    setRowData(data.data);
-    setPagination(prev => ({ ...prev, total: data.total }));
-  }, [pagination.page, pagination.limit]);
+  useEffect(() => {
+    (async () => {
+      const data = await getLeadById(id);
+      setLead(data);
+      setLoading(false);
+    })();
+  }, [id]);
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
-
-  const columns = [
-    { field: "first_name" },
-    { field: "last_name" },
-    { field: "email" },
-    { field: "company" },
-    { field: "status" },
-    {
-      headerName: "Actions",
-      cellRenderer: (params) => (
-        <div className="flex gap-2">
-          <Link to={`/leads/edit/${params.data._id}`} className="text-blue-600">Edit</Link>
-          <button
-            onClick={async () => {
-              await api.delete(`/leads/${params.data._id}`);
-              fetchLeads();
-            }}
-            className="text-red-600"
-          >Delete</button>
-        </div>
-      ),
-    },
-  ];
+  if (loading) return <p className="p-4">Loading...</p>;
+  if (!lead) return <p className="p-4">Lead not found</p>;
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between mb-2">
-        <h1 className="text-2xl font-bold">Leads</h1>
-        <Link to="/leads/new" className="bg-green-600 text-white px-3 py-1 rounded">+ New Lead</Link>
+    <div className="p-6 max-w-3xl mx-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">
+          {lead.first_name} {lead.last_name}
+        </h1>
+        <Link to="/leads" className="text-blue-600">← Back to Leads</Link>
       </div>
-      <div className="ag-theme-alpine" style={{ height: 500 }}>
-        <AgGridReact rowData={rowData} columnDefs={columns} pagination={false} />
-      </div>
-      <div className="flex justify-between mt-3">
-        <button disabled={pagination.page === 1}
-          onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}>
-          Prev
-        </button>
-        <span>Page {pagination.page}</span>
-        <button
-          disabled={pagination.page * pagination.limit >= pagination.total}
-          onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}>
-          Next
-        </button>
+
+      <div className="grid grid-cols-2 gap-4 bg-white shadow rounded-2xl p-6">
+        <div>
+          <p className="text-gray-500">Email</p>
+          <p>{lead.email}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Phone</p>
+          <p>{lead.phone}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Company</p>
+          <p>{lead.company}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">City / State</p>
+          <p>{lead.city}, {lead.state}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Source</p>
+          <p>{lead.source}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Status</p>
+          <p className="capitalize">{lead.status}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Score</p>
+          <p>{lead.score}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Lead Value</p>
+          <p>₹{lead.lead_value}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Last Activity</p>
+          <p>{lead.last_activity_at ? new Date(lead.last_activity_at).toLocaleDateString() : "No activity"}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Qualified</p>
+          <p>{lead.is_qualified ? "Yes" : "No"}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Created At</p>
+          <p>{new Date(lead.created_at).toLocaleString()}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">Updated At</p>
+          <p>{new Date(lead.updated_at).toLocaleString()}</p>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Leads;
+}

@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
-import api from "../api/axios";
 import { useAuth } from "../context/authContext";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { setUser } = useAuth();
-
+  const { login } = useAuth();
+  useEffect(() => {
+     console.log(form.email, form.password)
+  }, []);
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -16,12 +17,11 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/login", form, { withCredentials: true });
-      const { data } = await api.get("/myprofile", { withCredentials: true });
-      setUser(data);
+      await login(form.email, form.password);
       navigate("/leads");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
+
+      setError("Invalid credentials");
     }
   };
 

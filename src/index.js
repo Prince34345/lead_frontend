@@ -4,11 +4,18 @@ import './index.css';
 import App from './App';
 import { AuthProvider } from './context/authContext';
 import "./App.css";
+import { LeadsProvider } from './context/leadContext';
+import { ModuleRegistry } from "ag-grid-community";
+import { AllCommunityModule } from "ag-grid-community";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <AuthProvider>
-    <App />
+      <LeadsProvider>
+           <App />
+      </LeadsProvider>
     </AuthProvider>
   </React.StrictMode>
 );
